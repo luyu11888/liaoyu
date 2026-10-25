@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六壬课馆 · 大六壬排盘</title>
+<script src="lib/lunar.js"></script>
+<script src="data.js"></script>
+<script src="liuren.js"></script>
+<script src="summary.js"></script>
+<script src="app.js"></script>
+<style>
+  :root{ --ink:#241a10; --gold:#c9a24b; --paper:#f7eeda; --paper2:#efe0bd; --red:#a33327; --blue:#274a5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"KaiTi","STKaiti","楷体","SimSun",serif; color:var(--ink);
+    background:
+      radial-gradient(ellipse at 80% 0%, #3d5a68 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 100%, #4a3520 0%, transparent 55%),
+      linear-gradient(160deg,#101b22 0%,#24323b 55%,#101b22 100%);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:22px 12px 44px;
+  }
+  .frame{
+    width:100%; max-width:980px;
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    border:2px solid var(--gold); border-radius:12px;
+    box-shadow:0 14px 46px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.3);
+    padding:26px 24px 30px; position:relative;
+  }
+  .frame::before,.frame::after{
+    content:"☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"; position:absolute; left:0; right:0;
+    text-align:center; color:rgba(201,162,75,.5); font-size:13px; letter-spacing:6px; pointer-events:none;
+  }
+  .frame::before{ top:-19px; }
+  .frame::after{ bottom:-19px; content:"✦ 六 壬 之 学 · 人 心 之 机 ✦"; font-size:13px; letter-spacing:4px; }
+  header{ text-align:center; margin-bottom:4px; }
+  .shop-name{ font-size:30px; font-weight:bold; letter-spacing:5px; color:var(--red); text-shadow:1px 1px 0 rgba(255,255,255,.55); }
+  .shop-sub{ margin-top:6px; font-size:15px; letter-spacing:6px; color:#6b5638; }
+  .motto{ margin-top:9px; font-size:14px; color:#7a6544; line-height:1.7; }
+  .divider{ border:none; border-top:1px dashed var(--gold); margin:16px 0; }
+  .sec-title{ font-size:17px; color:var(--red); letter-spacing:3px; margin:20px 0 10px; display:flex; align-items:center; gap:8px; }
+  .sec-title::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--gold),transparent); }
+  .sec-title small{ font-size:12px; color:#8a7a5a; letter-spacing:1px; }
+
+  /* 表单 */
+  .form{ background:rgba(255,255,255,.5); border:1px solid #d8c08a; border-radius:9px; padding:16px 18px; }
+  .form-grid{ display:flex; flex-wrap:wrap; gap:12px 18px; align-items:flex-end; }
+  .fld{ display:flex; flex-direction:column; gap:5px; }
+  .fld label{ font-size:13px; color:#7a6544; letter-spacing:2px; }
+  .fld input[type=date], .fld select, .fld input[type=time]{
+    font-family:inherit; font-size:16px; color:var(--ink); padding:8px 10px;
+    border:1px solid #b99a5c; border-radius:6px; background:#fffdf6; outline:none;
+  }
+  .fld input:focus, .fld select:focus{ border-color:var(--red); box-shadow:0 0 0 2px rgba(163,51,39,.12); }
+  .btn{ font-family:inherit; font-size:17px; letter-spacing:4px; border:none; border-radius:7px; cursor:pointer;
+    padding:11px 26px; box-shadow:0 3px 0 rgba(0,0,0,.25); transition:transform .08s; }
+  .btn:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+  .btn-main{ background:linear-gradient(180deg,#b53c2e,#8c2418); color:#fff6e0; }
+  .btn-ghost{ background:linear-gradient(180deg,#caa85c,#a9812f); color:#3a2a10; font-size:14px; letter-spacing:2px; padding:9px 16px; }
+  .btn-row{ margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .hint-sub{ font-size:12px; color:#8a7a5a; line-height:1.8; margin-top:8px; }
+
+  /* 起课中 */
+  .casting{ display:none; text-align:center; padding:22px 0 8px; }
+  .casting.show{ display:block; }
+  .taiji{ width:70px; height:70px; margin:6px auto 12px; border-radius:50%;
+    background:conic-gradient(#2b1f14 0 50%, #f6ecd7 50% 100%); position:relative; animation:spin 1.5s linear infinite;
+    box-shadow:0 0 22px rgba(201,162,75,.5), inset 0 0 0 6px var(--paper); }
+  .taiji::before,.taiji::after{ content:""; position:absolute; width:12px; height:12px; border-radius:50%; left:29px; }
+  .taiji::before{ background:#f6ecd7; top:13px; }
+  .taiji::after{ background:#2b1f14; top:45px; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .casting-word{ font-size:17px; letter-spacing:6px; color:var(--red); animation:breathe 1.2s ease infinite; }
+  @keyframes breathe{ 0%,100%{opacity:.4;} 50%{opacity:1;} }
+
+  /* 结果 */
+  .result{ display:none; }
+  .result.show{ display:block; animation:fadein .5s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  /* 一句话总评 */
+  .brief-card{ background:linear-gradient(180deg,#fdf7e8,#f6e9cd); border:1px solid var(--gold); border-radius:10px; padding:16px 18px; margin-bottom:16px; }
+  .bc-title{ font-size:16px; letter-spacing:4px; color:var(--red); text-align:center; margin-bottom:8px; }
+  .sum-head{ font-size:16.5px; line-height:2; color:#3a2a10; }
+  .sum-tags{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .tag{ font-size:12.5px; color:#5c4425; background:#fffdf6; border:1px solid var(--gold); border-radius:14px; padding:2px 10px; }
+  .sc-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; font-size:13px; color:#4a3a22; }
+  .sc-n{ width:40px; color:var(--red); letter-spacing:1px; }
+  .sc-bar{ flex:1; min-width:120px; height:11px; background:#eadfc2; border-radius:8px; overflow:hidden; }
+  .sc-bar i{ display:block; height:100%; background:linear-gradient(90deg,#c9a24b,#a33327); transition:width .7s ease; }
+  .sc-v{ width:26px; text-align:right; font-weight:bold; }
+  .sc-why{ font-size:12px; color:#8a7a5a; }
+  .bc-three{ margin-top:12px; }
+  .bc-line{ font-size:14px; line-height:1.95; color:#4a3a22; padding:6px 0; border-bottom:1px dashed #e0cda0; }
+  .bc-line:last-child{ border-bottom:none; }
+  .bc-line b{ color:var(--red); font-weight:normal; letter-spacing:1px; margin-right:8px; }
+  .bc-line.sm{ font-size:13.5px; }
+  .bc-area{ margin-top:10px; }
+  .bc-sub{ font-size:14px; letter-spacing:2px; color:var(--red); margin-bottom:4px; }
+  .kv2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .kv2 .box{ background:rgba(255,255,255,.55); border:1px solid #dcc592; border-radius:8px; padding:11px 13px; }
+  .kv2 .box .t{ font-size:14px; letter-spacing:2px; margin-bottom:6px; }
+  .kv2 .box .t.ok{ color:#46691f; } .kv2 .box .t.no{ color:var(--red); }
+  .kv2 .box li{ font-size:13px; line-height:1.9; color:#4a3a22; margin-left:18px; }
+  .advice{ margin-top:12px; background:rgba(255,255,255,.55); border:1px dashed var(--gold); border-radius:8px; padding:11px 13px; }
+  .advice .t{ font-size:14px; letter-spacing:2px; color:var(--red); margin-bottom:6px; }
+  .advice li{ font-size:13.5px; line-height:1.95; color:#4a3a22; margin-left:18px; }
+  .sum-bottom{ margin-top:12px; font-size:14.5px; line-height:1.95; color:#3a2a10; background:rgba(255,255,255,.55);
+    border-left:3px solid var(--red); border-radius:0 6px 6px 0; padding:8px 12px; }
+  @media (max-width:680px){ .kv2{ grid-template-columns:1fr; } .sc-why{ display:none; } .sum-head{ font-size:15px; } }
+
+  .basis{ background:rgba(255,255,255,.55); border-left:4px solid var(--gold); border-radius:0 7px 7px 0;
+    padding:10px 14px; font-size:14px; line-height:2; display:flex; flex-wrap:wrap; gap:4px 18px; }
+  .basis b{ color:var(--red); font-weight:normal; letter-spacing:1px; margin-right:4px; }
+
+  /* 天地盘 */
+  .pan-wrap{ display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  .pan{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:100%; max-width:430px; margin:0 auto; }
+  .pc{ background:rgba(255,255,255,.6); border:1px solid #dcc592; border-radius:7px; padding:6px 2px 5px;
+    text-align:center; cursor:pointer; position:relative; transition:all .18s; }
+  .pc:hover{ border-color:var(--red); background:#fff7e8; }
+  .pc .tj{ font-size:11.5px; color:#8a6d3b; letter-spacing:1px; }
+  .pc .tp{ font-size:28px; font-weight:bold; line-height:1.1; text-shadow:1px 1px 0 rgba(255,255,255,.6); }
+  .pc .dp{ font-size:11px; color:#9a8a63; }
+  .pc.void{ visibility:hidden; }
+  .pc.shi{ border-color:var(--red); box-shadow:0 0 0 1px rgba(163,51,39,.3); background:#fff3e0; }
+  .pc.yj{ background:#fbf1d8; }
+  .pc.chuan{ border-color:#3f6b26; box-shadow:0 0 0 2px rgba(63,107,38,.35); }
+  .pc.rizhi{ background:#eaf0f4; }
+  .pc .tagm{ position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:10px; letter-spacing:0;
+    background:var(--red); color:#fff6e0; border-radius:10px; padding:0 6px; white-space:nowrap; }
+  .pan-note{ font-size:13px; color:#4a3a22; line-height:1.9; background:rgba(255,255,255,.45);
+    border:1px dashed #d8c08a; border-radius:7px; padding:9px 12px; margin-top:10px; min-height:60px; }
+  .pan-legend{ font-size:12px; color:#8a7a5a; text-align:center; margin-top:8px; line-height:1.8; }
+
+  /* 四课 */
+  .ke-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:6px; }
+  .ke{ background:rgba(255,255,255,.6); border:1px solid #dcc592; border-radius:8px; padding:10px 6px 8px; text-align:center; position:relative; }
+  .ke-tag{ position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(180deg,#caa85c,#a9812f); color:#3a2a10; font-size:11.5px; letter-spacing:1px;
+    padding:1px 10px; border-radius:20px; white-space:nowrap; }
+  .ke .up{ font-size:34px; font-weight:bold; margin:4px 0 2px; }
+  .ke .jia{ font-size:12.5px; color:var(--red); }
+  .ke .dn{ font-size:12px; color:#6b5638; border-top:1px dashed #e2cfa0; margin-top:5px; padding-top:4px; }
+  .ke .sub{ font-size:11.5px; color:#8a7a5a; }
+  .ke.has-ke{ border-color:var(--red); box-shadow:0 0 0 1px rgba(163,51,39,.25); }
+  .ke .kebadge{ display:inline-block; font-size:11px; background:var(--red); color:#fff6e0; border-radius:10px; padding:0 8px; }
+
+  /* 三传 */
+  .chuan-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:6px; }
+  .ch{ background:linear-gradient(180deg,#fdf7e8,#f7ecd0); border:1px solid var(--gold); border-radius:9px;
+    padding:12px 8px 10px; text-align:center; position:relative; animation:up .5s ease both; }
+  .ch:first-child{ border-color:var(--red); box-shadow:0 0 0 1px rgba(163,51,39,.25); }
+  @keyframes up{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+  .ch .pt{ font-size:12px; letter-spacing:2px; color:#8a6d3b; }
+  .ch .zhi{ font-size:44px; font-weight:bold; line-height:1.1; text-shadow:1px 1px 0 rgba(255,255,255,.6); }
+  .ch .jia{ font-size:15px; color:var(--red); letter-spacing:2px; }
+  .ch .meta{ font-size:12.5px; color:#6b5638; line-height:1.8; margin-top:4px; }
+  .ch .badges{ display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:5px; }
+  .badge{ font-size:11px; color:#5c4425; background:#f2e2bd; border:1px solid #caa85c; border-radius:12px; padding:0 8px; line-height:1.7; }
+  .badge.bad{ background:#f6e0d8; color:#a33a2a; border-color:#dcb09e; }
+  .badge.good{ background:#e6efdc; color:#46691f; border-color:#b7cf96; }
+
+  /* 解读 */
+  .plain{ font-size:14px; line-height:2; color:#4a3a22; background:rgba(255,255,255,.42);
+    border:1px solid #e6d6ab; border-left:3px solid var(--gold); border-radius:0 6px 6px 0; padding:9px 13px; margin-top:8px; }
+  .summary-box{ background:rgba(255,255,255,.55); border:1px solid #d8c08a; border-radius:9px; padding:14px 16px; margin-top:6px; }
+  .summary-box p{ font-size:14.5px; line-height:2; text-indent:2em; margin-bottom:8px; }
+  .sum-lead{ font-size:16px; letter-spacing:2px; color:var(--red); text-indent:0 !important; }
+  .line{ font-size:13.5px; line-height:1.95; color:#4a3a22; border-bottom:1px dashed #e6d6ab; padding:6px 2px; }
+  .line:last-child{ border-bottom:none; }
+  .line b{ color:var(--red); font-weight:normal; letter-spacing:1px; margin-right:6px; }
+  .kv{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; }
+  .kv .box{ background:rgba(255,255,255,.5); border:1px solid #dcc592; border-radius:8px; padding:11px 13px; }
+  .kv .box .t{ font-size:14px; letter-spacing:2px; color:var(--red); margin-bottom:6px; }
+  .kv .box li{ font-size:13px; line-height:1.9; color:#4a3a22; margin-left:18px; }
+  .score-bar{ display:flex; align-items:center; gap:10px; margin-top:8px; font-size:13px; color:#6b5638; }
+  .score-bar .bar{ flex:1; height:12px; background:#eadfc2; border-radius:8px; overflow:hidden; }
+  .score-bar .bar i{ display:block; height:100%; background:linear-gradient(90deg,#c9a24b,#a33327); transition:width .7s ease; }
+  details.faq{ margin-top:14px; background:rgba(255,255,255,.45); border:1px solid #dcc592; border-radius:8px; padding:10px 14px; }
+  details.faq summary{ cursor:pointer; font-size:14.5px; letter-spacing:2px; color:var(--red); }
+  details.faq p{ font-size:13px; line-height:1.95; color:#4a3a22; margin-top:6px; }
+  details.faq b{ color:#8a4a2e; font-weight:normal; }
+  .foot{ text-align:center; font-size:12px; color:#8a7a5a; margin-top:18px; line-height:1.9; }
+
+  @media (max-width:680px){
+    .ke-grid{ grid-template-columns:repeat(2,1fr); }
+    .chuan-grid{ grid-template-columns:1fr; }
+    .kv{ grid-template-columns:1fr; }
+    .pc .tp{ font-size:22px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="shop-name">六壬课馆</div>
+    <div class="shop-sub">大 六 壬 · 起 课 与 白 话 断</div>
+    <div class="motto">三式之首，以月将加时、起四课三传，察人心之几。<br>新手不必懂术语：选时间、选想问的事，点起课即可。</div>
+  </header>
+
+  <hr class="divider">
+
+  <div class="form">
+    <div class="form-grid">
+      <div class="fld">
+        <label>占问日期</label>
+        <input type="date" id="in-date">
+      </div>
+      <div class="fld">
+        <label>占问时辰</label>
+        <select id="in-shichen"></select>
+      </div>
+      <div class="fld">
+        <label>想问的事</label>
+        <select id="in-question"></select>
+      </div>
+      <div class="fld">
+        <label>月将（默认按节气自动）</label>
+        <select id="in-yuejiang">
+          <option value="">自动（中气换将）</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-main" id="btn-pai">起 课</button>
+      <button class="btn btn-ghost" id="btn-now">用当前时间</button>
+      <button class="btn btn-ghost" id="btn-sample">随机一课</button>
+      <span class="hint-sub">时辰按本地时间；23:00 以后算次日子时。</span>
+    </div>
+  </div>
+
+  <div class="casting" id="casting">
+    <div class="taiji"></div>
+    <div class="casting-word">月 将 加 时 · 四 课 三 传</div>
+  </div>
+
+  <div class="result" id="result">
+    <div id="brief"></div>
+
+    <div class="sec-title">课 体 概 要 <small id="jq-note"></small></div>
+    <div class="basis" id="basis"></div>
+
+    <div class="sec-title">天 地 盘 <small>点格子看这一位的意思</small></div>
+    <div class="pan" id="pan"></div>
+    <div class="pan-legend">上为天将、中为天盘（月将所布）、下为地盘；绿框为三传所临，红框为占时。</div>
+    <div class="pan-note" id="pan-note">（点击上方任意一格，这里会解释它的含义）</div>
+
+    <div class="sec-title">四 课 <small>干阳 · 干阴 · 支阳 · 支阴</small></div>
+    <div class="ke-grid" id="si-ke"></div>
+
+    <div class="sec-title">三 传 <small>初为发端 · 中为过程 · 末为结局</small></div>
+    <div class="chuan-grid" id="san-chuan"></div>
+
+    <div class="sec-title">白 话 断 课 <small id="score-note"></small></div>
+    <div class="summary-box" id="duan"></div>
+
+    <div class="kv" id="kv"></div>
+
+    <div class="sec-title">小 六 壬 · 时 辰 速 查 <small>掐指一算，先看这一时的吉凶</small></div>
+    <div class="plain" id="xlr"></div>
+
+    <details class="faq">
+      <summary>新手速查：这些名词是什么意思？</summary>
+      <p><b>月将</b>：太阳所在的位置，按节气（中气）更换，是起课的“天时”。</p>
+      <p><b>占时</b>：你来问事的时辰。把月将加到占时上，就得到天盘。</p>
+      <p><b>天盘 / 地盘</b>：地盘固定不动（十二支方位），天盘是月将加时后叠上去的“流动之气”。</p>
+      <p><b>四课</b>：以日干、日支各分阴阳，共四课，是事情的表里两层。</p>
+      <p><b>三传</b>：初传（发用）是事情怎么开头，中传是过程，末传是结局。</p>
+      <p><b>天将</b>：贵人、螣蛇…十二位，看事情“由什么样的力量”推动。</p>
+      <p><b>空亡</b>：落空的支，主虚、主没有实质，好事打折、坏事也减半。</p>
+      <p><b>类神</b>：问财看妻财、问考试看父母、问病看官鬼——问什么就找什么。</p>
+    </details>
+
+    <div class="foot">
+      排盘算法与数据来自开源项目（jingrongx/liuren、chinese-metaphysics-skills/liuren-skill、6tail lunar-javascript）<br>
+      并以《大六壬类集》贵神起式歌校正昼贵夜贵。本工具供学习参考，不作绝对判断。
+    </div>
+  </div>
+</div>
+</body>
+</html>

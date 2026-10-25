@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>紫微斗数馆 · 排盘与白话解盘</title>
+<script src="lib/iztro.min.js"></script>
+<script src="data.js"></script>
+<script src="ziwei.js"></script>
+<script src="app.js"></script>
+<style>
+  :root{ --ink:#241a10; --gold:#c9a24b; --paper:#f7eeda; --paper2:#efe0bd; --red:#a33327; --blue:#274a5e; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"KaiTi","STKaiti","楷体","SimSun","Microsoft YaHei",serif; color:var(--ink);
+    -webkit-text-size-adjust:100%; text-rendering:optimizeLegibility;
+    background:
+      radial-gradient(ellipse at 80% 0%, #4a3a5e 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 100%, #4a3520 0%, transparent 55%),
+      linear-gradient(160deg,#151321 0%,#2b2438 55%,#151321 100%);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:22px 12px 44px;
+  }
+  .frame{
+    width:100%; max-width:980px;
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+    border:2px solid var(--gold); border-radius:12px;
+    box-shadow:0 14px 46px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.3);
+    padding:26px 24px 30px; position:relative;
+  }
+  .frame::before,.frame::after{
+    content:"☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"; position:absolute; left:0; right:0;
+    text-align:center; color:rgba(201,162,75,.5); font-size:13px; letter-spacing:6px; pointer-events:none;
+  }
+  .frame::before{ top:-19px; }
+  .frame::after{ bottom:-19px; content:"✦ 紫 微 斗 数 · 十 二 宫 之 学 ✦"; font-size:13px; letter-spacing:4px; }
+  header{ text-align:center; margin-bottom:4px; }
+  .shop-name{ font-size:30px; font-weight:bold; letter-spacing:5px; color:var(--red); text-shadow:1px 1px 0 rgba(255,255,255,.55); }
+  .shop-sub{ margin-top:6px; font-size:15px; letter-spacing:6px; color:#6b5638; }
+  .motto{ margin-top:9px; font-size:14px; color:#7a6544; line-height:1.7; }
+  .divider{ border:none; border-top:1px dashed var(--gold); margin:16px 0; }
+  .sec-title{ font-size:17px; color:var(--red); letter-spacing:3px; margin:20px 0 10px; display:flex; align-items:center; gap:8px; }
+  .sec-title::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--gold),transparent); }
+  .sec-title small{ font-size:12px; color:#8a7a5a; letter-spacing:1px; }
+
+  /* 表单 */
+  .form{ background:rgba(255,255,255,.5); border:1px solid #d8c08a; border-radius:9px; padding:16px 18px; }
+  .form-grid{ display:flex; flex-wrap:wrap; gap:12px 18px; align-items:flex-end; }
+  .fld{ display:flex; flex-direction:column; gap:5px; }
+  .fld label{ font-size:13px; color:#7a6544; letter-spacing:2px; }
+  .fld input[type=date], .fld select, .fld input[type=number]{
+    font-family:inherit; font-size:16px; color:var(--ink); padding:8px 10px;
+    border:1px solid #b99a5c; border-radius:6px; background:#fffdf6; outline:none;
+  }
+  .fld input:focus, .fld select:focus{ border-color:var(--red); box-shadow:0 0 0 2px rgba(163,51,39,.12); }
+  .chk{ display:flex; align-items:center; gap:6px; font-size:13px; color:#7a6544; padding-bottom:8px; }
+  .btn{ font-family:inherit; font-size:17px; letter-spacing:4px; border:none; border-radius:7px; cursor:pointer;
+    padding:11px 26px; box-shadow:0 3px 0 rgba(0,0,0,.25); transition:transform .08s; }
+  .btn:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+  .btn-main{ background:linear-gradient(180deg,#b53c2e,#8c2418); color:#fff6e0; }
+  .btn-ghost{ background:linear-gradient(180deg,#caa85c,#a9812f); color:#3a2a10; font-size:14px; letter-spacing:2px; padding:9px 16px; }
+  .btn-row{ margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .hint-sub{ font-size:12px; color:#8a7a5a; line-height:1.8; margin-top:8px; }
+
+  /* 排盘中 */
+  .casting{ display:none; text-align:center; padding:22px 0 8px; }
+  .casting.show{ display:block; }
+  .taiji{ width:70px; height:70px; margin:6px auto 12px; border-radius:50%;
+    background:conic-gradient(#2b1f14 0 50%, #f6ecd7 50% 100%); position:relative; animation:spin 1.5s linear infinite;
+    box-shadow:0 0 22px rgba(201,162,75,.5), inset 0 0 0 6px var(--paper); }
+  .taiji::before,.taiji::after{ content:""; position:absolute; width:12px; height:12px; border-radius:50%; left:29px; }
+  .taiji::before{ background:#f6ecd7; top:13px; }
+  .taiji::after{ background:#2b1f14; top:45px; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .casting-word{ font-size:17px; letter-spacing:6px; color:var(--red); animation:breathe 1.2s ease infinite; }
+  @keyframes breathe{ 0%,100%{opacity:.4;} 50%{opacity:1;} }
+
+  .result{ display:none; }
+  .result.show{ display:block; animation:fadein .5s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  /* 总评卡 */
+  .sum-card{ background:linear-gradient(180deg,#fdf7e8,#f6e9cd); border:1px solid var(--gold); border-radius:10px; padding:16px 18px; }
+  .sum-head{ font-size:17px; line-height:2; color:#3a2a10; letter-spacing:1px; text-indent:2em; }
+  .sum-tags{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .tag{ font-size:12.5px; color:#5c4425; background:#fffdf6; border:1px solid #caa85c; border-radius:14px; padding:2px 10px; }
+  .sc-list{ margin-top:12px; }
+  .sc-row{ display:flex; align-items:center; gap:8px; margin-top:6px; font-size:13px; color:#4a3a22; }
+  .sc-n{ width:40px; color:var(--red); letter-spacing:1px; }
+  .sc-bar{ flex:1; height:11px; background:#eadfc2; border-radius:8px; overflow:hidden; }
+  .sc-bar i{ display:block; height:100%; background:linear-gradient(90deg,#c9a24b,#a33327); transition:width .7s ease; }
+  .sc-v{ width:26px; text-align:right; font-weight:bold; }
+  .sc-why{ font-size:12px; color:#8a7a5a; }
+  .sum-bottom{ margin-top:12px; font-size:14.5px; line-height:1.95; color:#3a2a10; background:rgba(255,255,255,.55);
+    border-left:3px solid var(--red); border-radius:0 6px 6px 0; padding:8px 12px; }
+  .kv2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .kv2 .box{ background:rgba(255,255,255,.55); border:1px solid #dcc592; border-radius:8px; padding:11px 13px; }
+  .kv2 .box .t{ font-size:14px; letter-spacing:2px; margin-bottom:6px; }
+  .kv2 .box .t.ok{ color:#46691f; } .kv2 .box .t.no{ color:var(--red); }
+  .kv2 .box li{ font-size:13px; line-height:1.9; color:#4a3a22; margin-left:18px; }
+  .advice{ margin-top:12px; background:rgba(255,255,255,.55); border:1px dashed var(--gold); border-radius:8px; padding:11px 13px; }
+  .advice .t{ font-size:14px; letter-spacing:2px; color:var(--red); margin-bottom:6px; }
+  .advice li{ font-size:13.5px; line-height:1.95; color:#4a3a22; margin-left:18px; }
+
+  /* 按事问答 */
+  .topic-box{ background:rgba(255,255,255,.55); border:1px solid #d8c08a; border-radius:9px; padding:14px 16px; }
+  .tp-head{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin-bottom:8px; }
+  .tp-p{ font-size:15px; letter-spacing:1px; color:var(--red); }
+  .tp-s{ font-size:13px; color:#6b5638; }
+  .tp-lv{ font-size:13px; border-radius:12px; padding:1px 10px; color:#fff6e0; }
+  .tp-lv.ok{ background:#46691f; } .tp-lv.mid{ background:#a9812f; } .tp-lv.no{ background:var(--red); }
+  .topic-box p{ font-size:14px; line-height:2; color:#4a3a22; text-indent:2em; }
+  .tp-tips{ margin-top:8px; }
+
+  .basis{ background:rgba(255,255,255,.55); border-left:4px solid var(--gold); border-radius:0 7px 7px 0;
+    padding:10px 14px; font-size:14px; line-height:2; display:flex; flex-wrap:wrap; gap:4px 18px; }
+  .basis b{ color:var(--red); font-weight:normal; letter-spacing:1px; margin-right:4px; }
+
+  /* 十二宫盘 */
+  .pan{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px 6px; margin-top:10px; }
+  .pc{ background:rgba(255,255,255,.62); border:1px solid #dcc592; border-radius:7px; padding:6px 5px 6px;
+    text-align:center; cursor:pointer; position:relative; transition:all .18s; min-height:120px; overflow:visible; }
+  .pc:hover{ border-color:var(--red); background:#fff7e8; }
+  .pc .ptags{ display:flex; flex-wrap:wrap; justify-content:center; gap:3px; min-height:16px; margin-bottom:2px; }
+  .pc .ph{ display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:#8a6d3b; padding:0 2px; line-height:1.6; }
+  .pc .pn{ letter-spacing:1px; white-space:nowrap; }
+  .pc .pb{ color:#9a8a63; white-space:nowrap; }
+  .pc .pstars{ margin:3px 0 2px; line-height:1.6; }
+  .pc .st{ display:inline-block; font-size:16px; font-weight:bold; line-height:1.4; margin:0 2px; color:#2f2416; white-space:nowrap; }
+  .pc .st.mn{ font-size:12.5px; font-weight:normal; color:#4a3a22; margin:0 1px; }
+  .pc .st.empty{ font-size:12px; color:#a89878; font-weight:normal; }
+  .pc .br{ font-size:11px; font-style:normal; color:#8a6d3b; margin-left:2px; }
+  .pc .br.miao,.pc .br.wang{ color:#a33327; }
+  .pc .br.bu,.pc .br.xian{ color:#6b7a8a; }
+  .pc .mu{ font-size:11px; font-style:normal; border-radius:6px; padding:0 4px; margin-left:2px; color:#fff;
+    display:inline-block; line-height:1.6; }
+  .pc .mu.lu{ background:#b8862f; } .pc .mu.quan{ background:#7a4b8a; }
+  .pc .mu.ke{ background:#3f6b26; } .pc .mu.ji{ background:#a33327; }
+  .pc .pminor{ font-size:12.5px; color:#5c4425; line-height:1.6; word-break:keep-all; }
+  .pc .padj{ font-size:11px; color:#9a8a63; line-height:1.55; margin-top:2px; word-break:keep-all; }
+  .pc .page{ font-size:11px; color:#a89878; margin-top:3px; }
+  .pc.ming{ border-color:var(--red); box-shadow:0 0 0 1px rgba(163,51,39,.35); background:#fff3e0; }
+  .pc.shen{ background:#fbf4e2; }
+  .pc.limit{ border-color:var(--blue); box-shadow:0 0 0 2px rgba(39,74,94,.32); }
+  .pc.ly{ background:#eaf0f4; }
+  .pc .tagm{ font-size:10.5px; letter-spacing:0; background:#6b5638; color:#fff6e0; border-radius:10px;
+    padding:1px 6px; white-space:nowrap; line-height:1.5; }
+  .pc .tagm.red{ background:var(--red); } .pc .tagm.gold{ background:#a9812f; }
+  .pc .tagm.blue{ background:var(--blue); } .pc .tagm.green{ background:#3f6b26; }
+  .pcenter{ grid-column:2 / span 2; grid-row:2 / span 2; background:linear-gradient(180deg,#fdf7e8,#f5e9cd);
+    border:1px solid var(--gold); border-radius:9px; padding:10px 12px; display:flex; flex-direction:column;
+    justify-content:center; gap:4px; }
+  .pcenter .ct{ text-align:center; font-size:19px; letter-spacing:6px; color:var(--red); margin-bottom:2px; }
+  .pcenter .cl{ font-size:12.5px; color:#6b5638; display:flex; justify-content:space-between; align-items:baseline;
+    gap:8px; border-bottom:1px dashed #e2cfa0; padding:3px 0; line-height:1.6; }
+  .pcenter .cl b{ color:#2f2416; font-weight:normal; letter-spacing:1px; text-align:right; word-break:break-all; }
+  .pcenter .cl.cur b{ color:var(--red); }
+  .pan-legend{ font-size:12px; color:#8a7a5a; text-align:center; margin-top:8px; line-height:1.8; }
+
+  .pan-note{ font-size:13.5px; color:#4a3a22; line-height:1.9; background:rgba(255,255,255,.45);
+    border:1px dashed #d8c08a; border-radius:7px; padding:10px 12px; margin-top:10px; }
+  .pan-note .pn-title{ font-size:15px; letter-spacing:2px; color:var(--red); margin-bottom:4px; }
+
+  /* 解读 */
+  .summary-box{ background:rgba(255,255,255,.55); border:1px solid #d8c08a; border-radius:9px; padding:14px 16px; margin-top:6px; }
+  .summary-box p{ font-size:14.5px; line-height:2; text-indent:2em; margin-bottom:6px; }
+  .sum-lead{ font-size:15.5px; letter-spacing:2px; color:var(--red); text-indent:0 !important; margin-top:8px; }
+  .line{ font-size:13.5px; line-height:1.95; color:#4a3a22; border-bottom:1px dashed #e6d6ab; padding:6px 2px; }
+  .line:last-child{ border-bottom:none; }
+  .line b{ color:var(--red); font-weight:normal; letter-spacing:1px; margin-right:6px; }
+  .line b.ok{ color:#46691f; } .line b.no{ color:#274a5e; }
+  .line b.lu{ color:#b8862f; } .line b.quan{ color:#7a4b8a; }
+  .line b.ke{ color:#3f6b26; } .line b.ji{ color:#a33327; }
+  .line .sub{ font-size:12.5px; color:#8a7a5a; }
+  .badge{ display:inline-block; font-size:11.5px; color:#5c4425; background:#f2e2bd; border:1px solid #caa85c;
+    border-radius:12px; padding:0 8px; line-height:1.8; margin:2px 3px 2px 0; }
+  .badge.soft{ background:#eef0e2; border-color:#c3cba6; }
+
+  /* 大限 */
+  .dc-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
+  .dc{ background:rgba(255,255,255,.6); border:1px solid #dcc592; border-radius:8px; padding:8px 4px; text-align:center; }
+  .dc.cur{ border-color:var(--red); background:#fff3e0; box-shadow:0 0 0 1px rgba(163,51,39,.3); }
+  .dc .da{ font-size:12px; color:#8a6d3b; }
+  .dc .dp{ font-size:16px; font-weight:bold; margin:2px 0; }
+  .dc .dg{ font-size:11.5px; color:#6b5638; }
+
+  details.faq{ margin-top:14px; background:rgba(255,255,255,.45); border:1px solid #dcc592; border-radius:8px; padding:10px 14px; }
+  details.faq summary{ cursor:pointer; font-size:14.5px; letter-spacing:2px; color:var(--red); }
+  details.faq p{ font-size:13px; line-height:1.95; color:#4a3a22; margin-top:6px; }
+  details.faq b{ color:#8a4a2e; font-weight:normal; }
+  .foot{ text-align:center; font-size:12px; color:#8a7a5a; margin-top:18px; line-height:1.9; }
+
+  @media (max-width:680px){
+    .dc-grid{ grid-template-columns:repeat(3,1fr); }
+    .kv2{ grid-template-columns:1fr; }
+    .sc-why{ display:none; }
+    .sum-head{ font-size:15.5px; text-indent:0; }
+    .pan{ gap:6px 4px; }
+    .pc{ min-height:104px; padding:5px 4px; }
+    .pc .st{ font-size:14px; margin:0 1px; }
+    .pc .st.mn{ font-size:12px; }
+    .pc .pminor{ font-size:11.5px; }
+    .pc .padj{ font-size:10.5px; }
+    .pc .br,.pc .mu{ font-size:10.5px; padding:0 3px; }
+    .shop-name{ font-size:24px; letter-spacing:3px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="shop-name">紫微斗数馆</div>
+    <div class="shop-sub">紫 微 斗 数 · 排 盘 与 白 话 解 盘</div>
+    <div class="motto">以生辰定命宫身宫，布十二宫、安十四主星与百余星曜，看性格、事业、财禄与婚姻。<br>新手不必懂术语：填出生时间，点「排盘」即可。</div>
+  </header>
+
+  <hr class="divider">
+
+  <div class="form">
+    <div class="form-grid">
+      <div class="fld">
+        <label>出生日期（公历）</label>
+        <input type="date" id="in-date">
+      </div>
+      <div class="fld">
+        <label>出生时辰</label>
+        <select id="in-shichen"></select>
+      </div>
+      <div class="fld">
+        <label>性别</label>
+        <select id="in-gender">
+          <option value="male">男</option>
+          <option value="female">女</option>
+        </select>
+      </div>
+      <div class="fld">
+        <label>要看的流年</label>
+        <input type="number" id="in-year" min="1900" max="2100" step="1">
+      </div>
+      <div class="fld">
+        <label>想问的事</label>
+        <select id="in-topic"></select>
+      </div>
+      <label class="chk"><input type="checkbox" id="in-fixleap">闰月修正（农历闰月出生请勾选）</label>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-main" id="btn-pai">排 盘</button>
+      <button class="btn btn-ghost" id="btn-now">用当前时间</button>
+      <button class="btn btn-ghost" id="btn-sample">随机一命</button>
+      <span class="hint-sub">时辰按本地时间；0 点为早子时，23 点为晚子时。不知道时辰可先按午时试排。</span>
+    </div>
+  </div>
+
+  <div class="casting" id="casting">
+    <div class="taiji"></div>
+    <div class="casting-word">安 星 布 宫 · 十 二 宫 起 例</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="sec-title">一 句 话 总 评 <small>看完这一段，就有整体印象</small></div>
+    <div id="summary"></div>
+
+    <div class="sec-title">我 想 问 的 事 <small>换上方「想问的事」，这里跟着变</small></div>
+    <div class="topic-box" id="topic-box"></div>
+
+    <div class="sec-title">命 盘 概 要 <small>四柱 · 五行局 · 命宫身宫</small></div>
+    <div class="basis" id="basis"></div>
+
+    <div class="sec-title">十 二 宫 命 盘 <small>点格子看这一宫的详细解说</small></div>
+    <div class="pan" id="pan"></div>
+    <div class="pan-legend">红框为命宫、金框为身宫，蓝框为当前大限所走的宫，浅蓝底为流年宫；括号内为星曜亮度，角标为四化（禄权科忌）。</div>
+    <div class="pan-note" id="pan-note">（点击上方任意一格，这里会解释它的含义）</div>
+
+    <div class="sec-title">白 话 解 盘 <small>总评的展开版：命宫 · 身宫 · 事业财帛婚姻 · 大限流年</small></div>
+    <div class="summary-box" id="duan"></div>
+
+    <div class="sec-title">格 局 <small>传统星曜组合的提示</small></div>
+    <div id="patterns"></div>
+
+    <div class="sec-title">生 年 四 化 <small>化禄 · 化权 · 化科 · 化忌</small></div>
+    <div id="sihua"></div>
+
+    <div class="sec-title">十 二 宫 速 览 <small>一宫一句，先有整体印象</small></div>
+    <div id="palace-list"></div>
+
+    <div class="sec-title">大 限 <small>每十年走一宫 · 蓝框为当前</small></div>
+    <div class="dc-grid" id="decadal"></div>
+
+    <div class="sec-title">流 年 <small>改上方「要看的流年」可切换</small></div>
+    <div id="yearly"></div>
+
+    <details class="faq">
+      <summary>新手速查：这些名词是什么意思？</summary>
+      <p><b>命宫</b>：你的"出厂设置"，看性格与一生的主调，是整张盘的核心。</p>
+      <p><b>身宫</b>：后天的着力点，你一生真正会在意、会经营的事。</p>
+      <p><b>三方四正</b>：本宫加上顺时针第 4、8 宫（三方）与对宫（四正），看星的强弱都要连起来看。</p>
+      <p><b>亮度（庙旺得利平不陷）</b>：同一颗星落在不同宫位力量不同，庙旺最好，陷地缺点明显。</p>
+      <p><b>四化</b>：化禄增加顺遂、化权掌控主导、化科名声与化解、化忌阻滞与在意——忌不一定坏，往往是最用心的地方。</p>
+      <p><b>大限</b>：十年一运，从命宫起按五行局顺行；看这十年的主题在哪一宫。</p>
+      <p><b>流年</b>：一年的运势，以太岁支落宫为重点，配合流年四化看这一年什么事会动。</p>
+      <p><b>空宫</b>：本宫没有主星，借对宫之星来论，性格易受环境影响。</p>
+      <p><b>命主 / 身主</b>：中宫里写的这两颗，命主按命宫地支起（如丑宫＝巨门）、身主按生年支起（如午年＝火星），看的是先天秉赋与后天身体，和命宫主星不是一回事。</p>
+      <p><b>总评里的分数</b>：把各宫主星亮度、四化、吉星煞星折算成 0–100 分，只是"这一宫配置顺不顺"的直观参考，不是绝对好坏。</p>
+    </details>
+
+    <div class="foot">
+      排盘算法与星曜宫位数据来自开源项目 iztro（github.com/sylarlong/iztro，MIT 协议）与 6tail/lunar-javascript；<br>
+      白话文案为学习整理，仅供文化参考，不作绝对判断。
+    </div>
+  </div>
+</div>
+</body>
+</html>
