@@ -1,0 +1,6 @@
+# 素材/源文件目录，无需发布到 GitHub Pages
+source/
+
+# 系统杂项
+.DS_Store
+Thumbs.db
