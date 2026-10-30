@@ -165,11 +165,12 @@ var WK_CFG = {
   subject: '术数工作台 · 访客留号入台',
   store: 'work_guest_v1',
   /* ★ 投递通道：按序尝试，前一个不通自动换下一个；全不通则提示复制 / 邮箱发送
-     备用通道示例（拿到 key 后取消注释即可）：
-     { name: 'web3forms', url: 'https://api.web3forms.com/submit', extra: { access_key: '你的KEY' } }
-     { name: 'formspree', url: 'https://formspree.io/f/你的ID' } */
+     - formsubmit：2026-10-30 实测整站返回 521（源站宕机），激活邮件也发不出，暂时不可用
+     - web3forms：把 access_key 换成你自己的即可启用（免费，无需激活邮件，提交即转发）
+     - formspree：{ name: 'formspree', url: 'https://formspree.io/f/你的ID' } */
   endpoints: [
-    { name: 'formsubmit', url: 'https://formsubmit.co/ajax/luyu111888@gmail.com' }
+    { name: 'web3forms', url: 'https://api.web3forms.com/submit', extra: { access_key: 'f3bd870f-f42e-4d3a-aa91-a097a613fab4' } },
+    { name: 'formsubmit', url: 'https://formsubmit.co/ajax/luyu111888@gmail.com' }   /* 2026-10-30 实测 521，恢复后作备胎 */
   ]
 };
 var WK = { passed: false, guest: null };
@@ -266,8 +267,11 @@ function wkSend(g, tag, report, cb) {   /* 留号 → 馆主邮箱（自动发�
   };
   var eps = WK_CFG.endpoints || [];
   if (!eps.length) { fallback('未配置投递通道'); return; }
+  var subj = WK_CFG.subject + (tag ? ' · ' + tag : '') + ' · 手机尾号 ' + String(g.phone || '').slice(-4);
   var payload = {
-    _subject: WK_CFG.subject + (tag ? ' · ' + tag : '') + ' · 手机尾号 ' + String(g.phone || '').slice(-4),
+    subject: subj,          /* web3forms 用它作邮件标题 */
+    from_name: '术数工作台',
+    _subject: subj,         /* formsubmit 用它作邮件标题 */
     _captcha: 'false',
     name: g.name || '术数工作台 · 访客',
     phone: g.phone || '',
