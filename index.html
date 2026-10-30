@@ -13,7 +13,7 @@
       radial-gradient(ellipse at 80% 0%, #4a3a5e 0%, transparent 55%),
       radial-gradient(ellipse at 10% 100%, #2b3f52 0%, transparent 50%), #1b1720;
     display:flex; flex-direction:column; min-height:100%; }
-  header{ padding:14px 18px 10px; text-align:center; border-bottom:1px solid rgba(202,168,92,.32); background:rgba(0,0,0,.16); }
+  header{ position:relative; padding:14px 18px 10px; text-align:center; border-bottom:1px solid rgba(202,168,92,.32); background:rgba(0,0,0,.16); }
   .title{ font-size:24px; letter-spacing:6px; color:var(--gold); }
   .sub{ margin-top:5px; font-size:12.5px; letter-spacing:2px; color:#a99a7c; }
   nav{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:12px 14px 8px; }
@@ -32,17 +32,357 @@
     nav a{ font-size:13px; padding:5px 12px; letter-spacing:1px; }
     .stage{ height:calc(100vh - 168px); min-height:520px; }
   }
+
+  /* ================= 进门留号 · 打开网页先留手机号 ================= */
+  .gate-bar{ position:absolute; top:12px; right:14px; font-size:12px; letter-spacing:1px;
+    color:#b8a982; display:none; align-items:center; gap:10px; }
+  .gate-bar b{ color:#f0d79a; font-weight:normal; letter-spacing:1px; }
+  .gate-bar a{ color:#caa85c; text-decoration:none; border-bottom:1px dotted rgba(202,168,92,.6); }
+  .gate-bar a:hover{ color:#fff6e0; }
+  .gate-ov{ position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center;
+    padding:24px 12px; overflow:auto;
+    background:
+      radial-gradient(900px 420px at 50% -10%, rgba(202,168,92,.15), transparent 62%),
+      rgba(10,8,14,.94); }
+  .gate-box{ position:relative; width:100%; max-width:470px; margin:auto; padding:24px 22px 20px;
+    border:1px solid rgba(202,168,92,.7); border-radius:14px; text-align:center;
+    background:linear-gradient(180deg,rgba(48,38,26,.97),rgba(20,16,22,.98));
+    box-shadow:0 22px 70px rgba(0,0,0,.72), inset 0 1px 0 rgba(255,224,150,.16); }
+  .gate-seal{ width:44px; height:44px; margin:0 auto 8px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:22px; color:#ffe9bd;
+    background:radial-gradient(circle at 32% 28%, #b9533f 0%, #6e160e 82%);
+    box-shadow:0 0 14px rgba(200,90,60,.4); }
+  .gate-title{ font-size:22px; letter-spacing:6px; color:var(--gold); }
+  .gate-sub{ margin-top:10px; font-size:13px; line-height:2; color:#cbbb95; }
+  .gate-sub b{ color:#f0d79a; font-weight:normal; }
+  .gate-fld{ margin-top:16px; text-align:left; }
+  .gate-fld label{ display:block; font-size:12.5px; color:#cbbb95; letter-spacing:1px; margin-bottom:6px; }
+  .gate-fld .req{ color:#ff9d7a; font-style:normal; font-size:11.5px; }
+  .gate-fld .opt{ color:#8b7d5c; font-style:normal; font-size:11px; }
+  .gate-input{ width:100%; font-family:inherit; font-size:16px; letter-spacing:1px; padding:11px 12px;
+    border-radius:9px; background:rgba(0,0,0,.35); color:#f6ecd6;
+    border:1px solid rgba(202,168,92,.5); outline:none; }
+  .gate-input:focus{ border-color:#e0bd6a; box-shadow:0 0 10px rgba(202,168,92,.24); }
+  .gate-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:12px; text-align:left; }
+  .gate-grid .g-cell label{ display:block; font-size:12px; color:#b8a982; margin-bottom:5px; }
+  .gate-err{ display:none; margin-top:12px; font-size:12.5px; line-height:1.8; color:#ffb59a;
+    background:rgba(120,30,20,.28); border:1px solid rgba(220,120,90,.5); border-radius:9px; padding:9px 10px; }
+  .gate-err.show{ display:block; }
+  .gate-btn{ width:100%; margin-top:16px; font-family:inherit; font-size:15px; letter-spacing:4px;
+    text-indent:4px; cursor:pointer; color:#fff6e0; padding:12px 0; border-radius:30px;
+    border:1px solid #caa85c; background:linear-gradient(180deg,#b9533f,#7c1f15);
+    box-shadow:0 10px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,224,150,.3); transition:all .18s; }
+  .gate-btn:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+  .gate-btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .gate-state{ margin-top:10px; font-size:12.5px; line-height:1.9; color:#b8a982; min-height:18px; }
+  .gate-state.ok{ color:#bcd893; }
+  .gate-priv{ margin-top:12px; padding-top:10px; border-top:1px dashed rgba(202,168,92,.3);
+    font-size:11.5px; line-height:1.8; color:#8b7d5c; }
+  .gate-x{ position:absolute; top:8px; right:12px; background:none; border:none; color:#8b7d5c;
+    font-size:19px; cursor:pointer; padding:2px 6px; display:none; }
+  .gate-x:hover{ color:#f0d79a; }
+  /* 投递回执 · 页面可见（入台后也能看到投递结果） */
+  .wk-toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:120;
+    display:none; max-width:min(92vw,560px); font-size:13px; line-height:1.9; letter-spacing:.5px;
+    padding:11px 16px; border-radius:10px; text-align:center;
+    background:linear-gradient(180deg,rgba(48,38,26,.97),rgba(22,17,22,.98));
+    border:1px solid rgba(202,168,92,.6); color:#e8dcc0;
+    box-shadow:0 12px 34px rgba(0,0,0,.6); }
+  .wk-toast.show{ display:block; }
+  .wk-toast.ok{ border-color:#8fae76; color:#cfe6bd; }
+  .wk-toast.err{ border-color:#cf8f74; color:#f4cbb8; }
+  .wk-toast a{ color:#f0d79a; text-decoration:none; border-bottom:1px dotted rgba(240,215,154,.6); margin:0 6px; }
+  .wk-toast a:hover{ color:#fff6e0; }
+  .wk-toast .wk-x{ margin-left:8px; color:#a99a7c; cursor:pointer; }
+  @media (max-width:680px){
+    .gate-bar{ position:static; justify-content:center; margin-top:8px; }
+    .gate-box{ padding:20px 15px 17px; }
+    .gate-title{ font-size:18px; letter-spacing:3px; }
+    .gate-grid{ grid-template-columns:1fr; gap:8px; }
+  }
 </style>
 </head>
 <body>
 <header>
+  <div class="gate-bar" id="gateBar">
+    <span>已留号 <b id="gateMask">****</b></span>
+    <a href="#" id="gateEdit" title="重新留号 / 改手机号">改手机号</a>
+  </div>
   <div class="title">术数工作台</div>
   <div class="sub">周 易 · 八 字 · 数 字 能 量 · 大 六 壬 · 塔 罗 · 紫 微 斗 数</div>
 </header>
 <nav id="nav"></nav>
 <main>
-  <div class="stage"><iframe id="stage" src="apps/iching/index.html" title="术数工具"></iframe></div>
+  <div class="stage"><iframe id="stage" title="术数工具"></iframe></div>
 </main>
+
+<!-- ================= 进门留号 · 打开网页先留本机手机号，留号后自动进入功能页 ================= -->
+<div class="gate-ov" id="gateOv">
+  <div class="gate-box">
+    <button class="gate-x" type="button" id="gateX" title="合上">✕</button>
+    <div class="gate-seal">术</div>
+    <div class="gate-title">入 台 留 号</div>
+    <div class="gate-sub">台内六术（周易 / 八字 / 数字能量 / 大六壬 / 塔罗 / 紫微）随意取用。<br>
+      入台前留个<b>本机手机号（必填）</b>，留号即自动入台；<br>号码与你所测结果一并送到馆主邮箱，馆主看过会回电陪你细聊。</div>
+    <div class="gate-fld">
+      <label for="gatePhone">本机手机号 <span class="req">＊ 必填</span></label>
+      <input class="gate-input" id="gatePhone" type="tel" inputmode="numeric" maxlength="11" autocomplete="tel" placeholder="11 位手机号，例如 13800138000">
+    </div>
+    <div class="gate-grid">
+      <div class="g-cell">
+        <label for="gateName">称呼 / 姓氏 <span class="opt">选填</span></label>
+        <input class="gate-input" id="gateName" maxlength="12" placeholder="例：陈">
+      </div>
+      <div class="g-cell">
+        <label for="gateCity">所在城市 <span class="opt">选填</span></label>
+        <input class="gate-input" id="gateCity" maxlength="20" placeholder="例：深圳">
+      </div>
+    </div>
+    <div class="gate-fld">
+      <label for="gateWx">微信号 <span class="opt">选填</span></label>
+      <input class="gate-input" id="gateWx" maxlength="30" placeholder="例：luyu11888">
+    </div>
+    <div class="gate-err" id="gateErr"></div>
+    <button class="gate-btn" type="button" id="gateGo">留 号 入 台</button>
+    <div class="gate-state" id="gateState"></div>
+    <div class="gate-priv">隐私承诺：手机号与所测内容仅用于馆主回电细聊，不存库、不外传、不做营销。留号后即可入台，台内不再打扰。</div>
+  </div>
+</div>
+<div class="wk-toast" id="wkToast"></div>
+<script>
+/* ============================================================
+ * 进门留号 · 打开网页先留本机手机号 → 自动投递馆主邮箱 → 入台
+ * 说明：
+ *  - 打开工作台时先显示留号层，填 11 位手机号（1 开头）即自动
+ *    入台，并加载后面的功能页（iframe）。
+ *  - 留号成功即通过 formsubmit 把「手机号＋选填信息」投递到馆主
+ *    邮箱；网络不通时提示可复制/邮箱发送，但不影响入台。
+ *  - 手机号记在 localStorage['work_guest_v1']，下次自动入台；
+ *    右上角「改手机号」可重新留号。
+ * ============================================================ */
+var WK_CFG = {
+  email: 'luyu111888@gmail.com',                 /* ★ 馆主邮箱（mailto 收件人） */
+  subject: '术数工作台 · 访客留号入台',
+  store: 'work_guest_v1',
+  /* ★ 投递通道：按序尝试，前一个不通自动换下一个；全不通则提示复制 / 邮箱发送
+     备用通道示例（拿到 key 后取消注释即可）：
+     { name: 'web3forms', url: 'https://api.web3forms.com/submit', extra: { access_key: '你的KEY' } }
+     { name: 'formspree', url: 'https://formspree.io/f/你的ID' } */
+  endpoints: [
+    { name: 'formsubmit', url: 'https://formsubmit.co/ajax/luyu111888@gmail.com' }
+  ]
+};
+var WK = { passed: false, guest: null };
+function wk$(id) { return document.getElementById(id); }
+function wkNow() {
+  var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+}
+function wkPhone() { var el = wk$('gatePhone'); return el ? el.value.replace(/\D/g, '') : ''; }
+function wkPhoneOk(p) { return /^1\d{10}$/.test(p || wkPhone()); }
+function wkExtra() {
+  var g = function (id) { var el = wk$(id); return el ? el.value.replace(/^\s+|\s+$/g, '') : ''; };
+  return { name: g('gateName'), city: g('gateCity'), wx: g('gateWx') };
+}
+function wkReadGuest() {
+  try {
+    var o = JSON.parse(localStorage.getItem(WK_CFG.store) || 'null');
+    return (o && o.phone) ? o : null;
+  } catch (e) { return null; }
+}
+function wkSaveGuest(p) {
+  var ex = wkExtra();
+  var g = { phone: p, name: ex.name, city: ex.city, wechat: ex.wx, time: wkNow(), page: location.href, ua: navigator.userAgent || '' };
+  try { localStorage.setItem(WK_CFG.store, JSON.stringify(g)); } catch (e) {}
+  WK.guest = g;
+  return g;
+}
+function wkPassed() { return WK.passed; }
+function wkMask(p) { return p ? p.slice(0, 3) + '****' + p.slice(-4) : '****'; }
+function wkState(msg, ok) {
+  var el = wk$('gateState');
+  if (!el) return;
+  el.className = 'gate-state' + (ok ? ' ok' : '');
+  el.innerHTML = msg || '';
+}
+function wkErr(msg) {
+  var el = wk$('gateErr');
+  if (!el) return;
+  if (!msg) { el.className = 'gate-err'; el.innerHTML = ''; return; }
+  el.className = 'gate-err show';
+  el.innerHTML = msg;
+}
+function wkCompose(g, tag, report) {
+  var L = [];
+  L.push('【术数工作台 · 访客留号' + (tag ? ' · ' + tag : '') + '】');
+  L.push('手机号：' + (g.phone || '（未留）'));
+  if (g.name || g.city) L.push('称呼 / 城市：' + (g.name || '—') + ' · ' + (g.city || '—'));
+  if (g.wechat) L.push('微信号：' + g.wechat);
+  L.push('留号时间：' + (g.time || wkNow()));
+  L.push('来源页面：' + (g.page || location.href));
+  if (report) { L.push(''); L.push('◆ 所测结果：'); L.push(report); }
+  return L.join('\n');
+}
+function wkCopy(t) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    return true;
+  } catch (e) { return false; }
+}
+function wkToast(html, ok, sticky) {   /* 页面可见的投递回执（入台后也看得见） */
+  var el = wk$('wkToast');
+  if (!el) return;
+  if (window.__wkTt) { clearTimeout(window.__wkTt); window.__wkTt = null; }
+  if (!html) { el.className = 'wk-toast'; el.innerHTML = ''; return; }
+  el.className = 'wk-toast show' + (ok === true ? ' ok' : (ok === false ? ' err' : ''));
+  el.innerHTML = html + '<span class="wk-x" id="wkToastX" title="关掉">✕</span>';
+  var x = wk$('wkToastX');
+  if (x) x.onclick = function () { el.className = 'wk-toast'; };
+  if (!sticky) window.__wkTt = setTimeout(function () { el.className = 'wk-toast'; }, 6000);
+}
+function wkSend(g, tag, report, cb) {   /* 留号 → 馆主邮箱（自动发送） */
+  var text = wkCompose(g, tag, report);
+  var mailto = 'mailto:' + encodeURIComponent(WK_CFG.email) +
+    '?subject=' + encodeURIComponent(WK_CFG.subject + (tag ? ' · ' + tag : '')) +
+    '&body=' + encodeURIComponent(text);
+  var fallback = function (why) {
+    var copied = wkCopy(text);
+    var msg = '在线投递没打通' + (why ? '（' + why + '）' : '') + '：' +
+      (copied ? '内容已复制，' : '') +
+      '<a href="' + mailto + '">用邮箱发送</a><a href="#" id="wkRetry">重试</a>';
+    wkState(msg);
+    wkToast(msg, false, true);
+    var rt = wk$('wkRetry');
+    if (rt) rt.onclick = function (e) {
+      e.preventDefault();
+      wkToast('重试投递中…');
+      wkSend(g, tag, report, cb);
+    };
+    if (cb) cb(false);
+  };
+  var eps = WK_CFG.endpoints || [];
+  if (!eps.length) { fallback('未配置投递通道'); return; }
+  var payload = {
+    _subject: WK_CFG.subject + (tag ? ' · ' + tag : '') + ' · 手机尾号 ' + String(g.phone || '').slice(-4),
+    _captcha: 'false',
+    name: g.name || '术数工作台 · 访客',
+    phone: g.phone || '',
+    city: g.city || '',
+    wechat: g.wechat || '',
+    time: g.time || wkNow(),
+    page: g.page || location.href,
+    report: text
+  };
+  var idx = 0, tried = [];
+  wkToast('投递中…');
+  (function attempt() {
+    if (idx >= eps.length) { fallback(tried.join('；')); return; }
+    var ep = eps[idx++], body = {}, k;
+    for (k in payload) { body[k] = payload[k]; }
+    if (ep.extra) { for (k in ep.extra) { body[k] = ep.extra[k]; } }
+    try {
+      fetch(ep.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (r) {
+        if (r && r.ok) {
+          var okMsg = '已送到馆主邮箱 ✓　手机号与内容都在，馆主看过会回电陪你细聊';
+          wkState(okMsg, true);
+          wkToast(okMsg, true);
+          if (cb) cb(true);
+        } else {
+          tried.push(ep.name + '·HTTP ' + (r ? r.status : '无响应'));
+          attempt();
+        }
+      }, function () {
+        tried.push(ep.name + '·网络不通');
+        attempt();
+      });   /* 第二参数＝失败回调（兼容老引擎，不用 .catch） */
+    } catch (e) {
+      tried.push(ep.name + '·异常');
+      attempt();
+    }
+  })();
+}
+/* 供台内各术页调用：parent.wkSendReport('结果文字') —— 带着手机号一并投邮箱 */
+window.wkSendReport = function (report, tag) {
+  var g = WK.guest || wkReadGuest();
+  if (!g) { wkState('还没留号，先在台门留个手机号吧。'); return false; }
+  wkSend(g, tag || '台内结果', report);
+  return true;
+};
+function wkShowBar(g) {
+  var bar = wk$('gateBar'), m = wk$('gateMask');
+  if (m) m.textContent = wkMask(g.phone);
+  if (bar) bar.style.display = 'flex';
+}
+function wkEnter(tag) {   /* 校验 → 存档 → 关层 → 自动打开功能页 → 发邮箱 */
+  var p = wkPhone();
+  if (!wkPhoneOk(p)) {
+    wkErr('请留 11 位手机号（1 开头），留号后即自动入台。');
+    var ph = wk$('gatePhone');
+    if (ph) ph.focus();
+    return false;
+  }
+  wkErr('');
+  var g = wkSaveGuest(p);
+  WK.passed = true;
+  var ov = wk$('gateOv');
+  if (ov) ov.style.display = 'none';
+  wkShowBar(g);
+  if (window.wkGo) window.wkGo();           /* ★ 自动打开后面的功能页 */
+  wkState('入台中…');
+  wkSend(g, tag || '入台');
+  return true;
+}
+function wkOpenGate(editable) {
+  var ov = wk$('gateOv');
+  var g = WK.guest || wkReadGuest();
+  if (g && !editable) return;
+  var x = wk$('gateX');
+  if (x) x.style.display = (WK.passed ? 'block' : 'none');
+  if (g && wk$('gatePhone')) wk$('gatePhone').value = g.phone;
+  wkErr(''); wkState('');
+  if (ov) ov.style.display = 'flex';
+  var ph = wk$('gatePhone');
+  if (ph) ph.focus();
+}
+function wkBind() {
+  var go = wk$('gateGo');
+  if (go) go.addEventListener('click', function () { wkEnter(WK.passed ? '改号' : '入台'); });
+  var ph = wk$('gatePhone');
+  if (ph) {
+    ph.addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 11); wkErr(''); });
+    ph.addEventListener('keydown', function (e) { if (e.key === 'Enter') wkEnter(WK.passed ? '改号' : '入台'); });
+  }
+  var ed = wk$('gateEdit');
+  if (ed) ed.addEventListener('click', function (e) { e.preventDefault(); wkOpenGate(true); });
+  var x = wk$('gateX');
+  if (x) x.addEventListener('click', function () { if (WK.passed) wk$('gateOv').style.display = 'none'; });
+  var ov = wk$('gateOv');
+  if (ov) ov.addEventListener('click', function (e) { if (e.target === ov && WK.passed) ov.style.display = 'none'; });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && WK.passed) wk$('gateOv').style.display = 'none'; });
+
+  var g = wkReadGuest();
+  if (g && wkPhoneOk(g.phone)) {   /* 本机留过号 → 直接入台，自动打开功能页 */
+    WK.guest = g;
+    WK.passed = true;
+    wk$('gateOv').style.display = 'none';
+    wkShowBar(g);
+  } else {
+    wkOpenGate(false);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', wkBind);
+} else {
+  wkBind();
+}
+</script>
 <script>
 (function () {
   'use strict';
@@ -71,6 +411,7 @@
     var a = null;
     APPS.forEach(function (x) { if (x.k === k) a = x; });
     if (!a) a = APPS[0];
+    if (typeof wkPassed === 'function' && !wkPassed()) { return; }   /* 未留号：先不加载，留号后自动打开 */
     stage.src = a.s;
     Object.keys(links).forEach(function (key) {
       if (key === a.k) { links[key].classList.add('on'); } else { links[key].classList.remove('on'); }
@@ -81,6 +422,7 @@
 
   window.addEventListener('hashchange', function () { go(location.hash.replace('#', '')); });
   go(location.hash.replace('#', '') || APPS[0].k);
+  window.wkGo = go;   /* 供留号通过后自动打开功能页 */
 })();
 </script>
 </body>
