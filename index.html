@@ -252,7 +252,8 @@ function wkSend(g, tag, report, cb) {   /* 留号 → 馆主邮箱（自动发�
     var copied = wkCopy(text);
     var msg = '在线投递没打通' + (why ? '（' + why + '）' : '') + '：' +
       (copied ? '内容已复制，' : '') +
-      '<a href="' + mailto + '">用邮箱发送</a><a href="#" id="wkRetry">重试</a>';
+      '<a href="' + mailto + '">用邮箱发送</a><a href="#" id="wkRetry">重试</a>' +
+      '<br><span style="font-size:11.5px;opacity:.75">首次用 formsubmit：需先到馆主邮箱点开它的「激活」链接，激活后才会转发邮件。</span>';
     wkState(msg);
     wkToast(msg, false, true);
     var rt = wk$('wkRetry');
